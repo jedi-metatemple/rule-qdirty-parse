@@ -3,12 +3,30 @@ use strict;
 use chobxml::toolk;
 use me::tag_stnz;
 use me::tag_p;
+use me::tag_expt;
+use me::ignore_tag;
+use me::tag_include;
+use me::tag_sub;
 
 my $intag;
 
 $intag = chobxml::toolk->new;
+$intag->define_tag('include',\&me::tag_include::tag_on,\&me::tag_include::tag_off);
+$intag->define_tag('sub',\&me::tag_sub::tag_on,\&me::tag_sub::tag_off);
 $intag->define_tag('stnz',\&me::tag_stnz::tag_on,\&me::tag_stnz::tag_off);
 $intag->define_tag('p',\&me::tag_p::tag_on,\&me::tag_p::tag_off);
+
+# While the rest of the 'initag' concept is already defined,
+# this module waits for a signal from the main script to
+# define the handler for the <expt> tag.
+sub set_exptext {
+  if ( $_[0] > 5 )
+  {
+    $intag->define_tag('expt',\&me::tag_expt::tag_on,\&me::tag_expt::tag_off);
+  } else {
+    $intag->define_tag('expt',\&me::ignore_tag::tag_on,\&me::ignore_tag::tag_off);
+  }
+}
 
 sub tag_on {
   my $lc_parr;

@@ -4,12 +4,12 @@ use wraprg;
 use chobdate;
 use chobxml::toolk;
 use chobxml::toolk::extra;
-use File::Basename;
 use me::titletag;
 use me::tag_lcn;
 use me::tag_sub;
 use me::fin;
 use me::tag_notice;
+use me::tag_include;
 
 
 
@@ -24,6 +24,7 @@ my $maxfuture = 10;
 #my $maxfuture = 600;
 my $parceon;
 my $showdate = 10;
+my $exptext = 5; # Do we show expanded text?
 
 my $rvstagval;
 
@@ -62,16 +63,36 @@ sub opto__indx_do {
 
 sub opto__gnr_do {
   $showdate = 0;
-}  &argola::setopt("-gnr",\&opto__gnr_do);
+} &argola::setopt("-gnr",\&opto__gnr_do);
 
 sub opto__far_do {
   $maxfuture = &argola::getrg();
-}  &argola::setopt("-far",\&opto__far_do);
+} &argola::setopt("-far",\&opto__far_do);
+
+sub opto__expt_do {
+  $exptext = 10;
+} &argola::setopt("-expt",\&opto__expt_do);
+
+sub opto__expt_no {
+  $exptext = 0;
+} &argola::setopt("+expt",\&opto__expt_no);
 
 
 &argola::runopts();
 
 &me::fin::set_show($showdate);
+
+# Finally resolve whether or not expanded text
+# is shown. By default, it is shown on generic
+# date-unrelated editions -- but this, obviously,
+# can be over-ridden with the appropriate
+# command-line options.
+if ( ( $exptext > 3 ) && ( $exptext < 7 ) )
+{
+  $exptext = 10;
+  if ( $showdate > 5 ) { $exptext = 0; }
+}
+&me::tag_lcn::set_exptext($exptext);
 
 
 if ( $homeyes < 5 )
@@ -100,7 +121,7 @@ sub git_v_tag {
 
 $parceon = chobxml::toolk->new;
 $parceon->define_tag('sect',\&open_sect_t,\&close_sect_t);
-$parceon->define_tag('include',\&open_include_t,\&close_include_t);
+$parceon->define_tag('include',\&me::tag_include::tag_on,\&me::tag_include::tag_off);
 $parceon->define_tag('title',\&me::titletag::open_title_t,\&me::titletag::close_title_t);
 $parceon->define_tag('lcn',\&me::tag_lcn::tag_on,\&me::tag_lcn::tag_off);
 $parceon->define_tag('sub',\&me::tag_sub::tag_on,\&me::tag_sub::tag_off);
@@ -189,34 +210,6 @@ sub close_sect_t
   
   $lc_sectitle = $_[0]->{'title'};
   $_[0]->{'title'} = $_[1]->{'tagdata'}->{'title'};
-}
-
-sub open_include_t {
-  my $lc_o_filoc;
-  my $lc_i_filoc;
-  my $lc_cm;
-  my $lc_cont;
-  
-  $lc_o_filoc = $_[0]->{'filoc'};
-  $_[1]->{'tagdata'}->{'filoc'} = $lc_o_filoc;
-  
-  $lc_i_filoc = dirname($lc_o_filoc);
-  $lc_i_filoc .= "/" . $_[1]->{'param'}->{'ref'};
-  
-  $_[0]->{'filoc'} = $lc_i_filoc;
-  
-  $lc_cm = "cat";
-  &argola::wraprg_lst($lc_cm,$lc_i_filoc);
-  $lc_cont = `$lc_cm`;
-  
-  
-  &filerr_on($_[0]->{'filoc'});
-  &chobxml::toolk::extra::subparse($_[1],$lc_cont);
-  $_[0]->{'filoc'} = $_[1]->{'tagdata'}->{'filoc'};
-  &filerr_on($_[0]->{'filoc'});
-}
-
-sub close_include_t {
 }
 
 
