@@ -74,7 +74,8 @@ sub mainfnc {
   print TAK $lc_targdata->{'css'};
   print TAK "</style>\n";
   
-  print TAK '</head><body><h1>Introductory Rule for Jedi</h1>' . "\n";
+  #print TAK '</head><body><h1>Introductory Rule for Jedi</h1>' . "\n";
+  print TAK '</head><body><h1>' . &me::titletag::ret_ttl() . '</h1>' . "\n";
   print TAK "\n&nbsp &nbsp; &nbsp; ";
   print TAK 'Visit the Home-Page of the Rule:<br/>';
   print TAK "\n&nbsp &nbsp; &nbsp; ";
